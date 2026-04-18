@@ -103,14 +103,46 @@ function triggerQuarantine(data) {
   document.querySelector('.cyberops-overlay')?.remove();
   const overlay = document.createElement('div');
   overlay.className = 'cyberops-overlay';
-  overlay.innerHTML =
-    '<div class="cyberops-modal">' +
-    '<div class="cyberops-title"><span style="font-size:30px">&#128737;</span> THREAT QUARANTINED</div>' +
-    '<p style="color:#ccc;font-size:14px">CyberOps Agent detected critical threats. Use extreme caution on this page.</p>' +
-    '<h3 style="color:#da3832;margin-top:20px;font-size:12px;text-transform:uppercase">Forensic Report</h3>' +
-    '<div class="threat-grid">' + data.threats.map(t => '<div class="threat-item">' + t + '</div>').join('') + '</div>' +
-    '<button class="cyber-btn" onclick="this.closest(\'.cyberops-overlay\').remove()">I Understand The Risks â€” Dismiss</button>' +
-    '</div>';
+
+  const modal = document.createElement('div');
+  modal.className = 'cyberops-modal';
+
+  const titleEl = document.createElement('div');
+  titleEl.className = 'cyberops-title';
+  const shieldIcon = document.createElement('span');
+  shieldIcon.style.fontSize = '30px';
+  shieldIcon.textContent = '🛡';
+  titleEl.appendChild(shieldIcon);
+  titleEl.appendChild(document.createTextNode(' THREAT QUARANTINED'));
+
+  const desc = document.createElement('p');
+  desc.style.cssText = 'color:#ccc;font-size:14px';
+  desc.textContent = 'CyberOps Agent detected critical threats. Use extreme caution on this page.';
+
+  const heading = document.createElement('h3');
+  heading.style.cssText = 'color:#da3832;margin-top:20px;font-size:12px;text-transform:uppercase';
+  heading.textContent = 'Forensic Report';
+
+  const grid = document.createElement('div');
+  grid.className = 'threat-grid';
+  data.threats.forEach((t) => {
+    const item = document.createElement('div');
+    item.className = 'threat-item';
+    item.textContent = t;
+    grid.appendChild(item);
+  });
+
+  const btn = document.createElement('button');
+  btn.className = 'cyber-btn';
+  btn.textContent = 'I Understand The Risks – Dismiss';
+  btn.addEventListener('click', () => overlay.remove());
+
+  modal.appendChild(titleEl);
+  modal.appendChild(desc);
+  modal.appendChild(heading);
+  modal.appendChild(grid);
+  modal.appendChild(btn);
+  overlay.appendChild(modal);
   document.body.appendChild(overlay);
 }
 
@@ -119,8 +151,17 @@ function showWarningBanner(data) {
   const banner = document.createElement('div');
   banner.id = 'cyberops-banner';
   banner.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:#f59e0b;color:black;padding:10px 16px;z-index:99999;font-family:sans-serif;font-size:13px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;';
-  banner.innerHTML = '<span>Warning: ' + data.threats.length + ' risk signal(s) detected on this page</span>' +
-    '<button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:16px;color:black">X</button>';
+
+  const msg = document.createElement('span');
+  msg.textContent = 'Warning: ' + data.threats.length + ' risk signal(s) detected on this page';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:16px;color:black';
+  closeBtn.textContent = 'X';
+  closeBtn.addEventListener('click', () => banner.remove());
+
+  banner.appendChild(msg);
+  banner.appendChild(closeBtn);
   document.body.prepend(banner);
 }
 
