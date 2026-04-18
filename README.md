@@ -22,7 +22,7 @@ CyberOps Agent is a **Chrome browser extension** that acts as your personal AI s
 | Capability | Description |
 |---|---|
 | 🔍 **Deep Page Scan** | On-demand forensic analysis of the current page |
-| 📊 **Threat Index** | Real-time risk score (0–100) for every site you visit |
+| 📊 **Threat Index** | Real-time risk score (0–100+) for every site you visit — see [SCORING.md](./SCORING.md) for the full rule set and worked examples |
 | 🚨 **Phishing Detection** | Identifies suspicious patterns, domains, and form behaviour |
 | ⚡ **Background Monitoring** | Service worker silently watches all tabs in real time |
 | 🖥️ **Clean UI** | Dark-themed popup with live console output |
@@ -108,13 +108,13 @@ Then in Chrome:
 
 ## 🔒 Permissions Explained
 
-CyberOps Agent requests only what it needs:
+CyberOps Agent requests only what it needs. For the full per-permission justification and a description of what data is and is not collected, see the [Privacy Policy](./PRIVACY_POLICY.md).
 
 | Permission | Why It's Needed |
 |---|---|
 | `activeTab` | Read the content of the currently active tab for scanning |
 | `scripting` | Inject `content.js` to analyse page DOM |
-| `storage` | Persist scan history and settings locally |
+| `storage` | Persist scan history and settings locally (planned feature) |
 | `tabs` | Monitor tab events for background threat tracking |
 
 > **No data is sent to external servers.** All analysis runs locally in your browser.
@@ -138,6 +138,23 @@ Since this is an unpacked extension, after editing any file:
 // content.js     — add DOM analysis & page signal extraction here
 // popup.js       — add UI interactions & scan triggers here
 ```
+
+---
+
+## 📊 Threat Scoring
+
+The Threat Index is built from **four deterministic rules** — no machine learning, no black box.
+
+| Rule | Points |
+|---|:---:|
+| Password field on a non-HTTPS page | +40 |
+| Form submits to a cross-origin host | +50 |
+| Social-engineering phrase in page text (per phrase) | +20 |
+| Misleading link (display text shows a domain ≠ actual href host) | +30 |
+
+**Thresholds:** 0 = clean · 1–69 = amber warning · 70+ = full quarantine overlay.
+
+See **[SCORING.md](./SCORING.md)** for the complete rule reference, the full list of recognised phrases, and four worked examples showing exactly why a page receives its score.
 
 ---
 
