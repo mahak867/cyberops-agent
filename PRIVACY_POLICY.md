@@ -25,9 +25,9 @@ When you click **Deep Scan Page**, the Extension reads the following from the ac
 
 **This data is analysed locally, in your browser, in memory only. It is never transmitted to any server, database, or third party.**
 
-### 2.2 Scan score (stored locally in your browser)
+### 2.2 Scan score and history (stored locally in your browser)
 
-The numeric threat score produced by a scan is logged to the browser's extension console via `background.js`. No scan history is currently persisted to `chrome.storage`; that feature is reserved for a future release and will be documented here when added.
+The numeric threat score, the list of triggered threats, and the page URL are saved to `chrome.storage.local` by `background.js` after each scan. Only the last 20 scan entries are retained; older entries are automatically dropped. This data never leaves your device.
 
 ---
 
@@ -51,7 +51,7 @@ The Extension requests the following Chrome permissions. Each permission is requ
 |---|---|
 | `activeTab` | Allows the popup to identify the currently active tab so the scan targets the page you are viewing right now. Without this permission the Extension cannot know which tab to analyse. |
 | `scripting` | Allows `popup.js` to send a `RUN_SCAN` message to the `content.js` script already running in the active tab. Required for Manifest V3 tab-to-extension messaging. |
-| `storage` | Reserved for a planned scan-history and user-preferences feature. Currently no data is written. |
+| `storage` | Persists the rolling scan history (last 20 entries: URL, score, threats, timestamp) to `chrome.storage.local`. Data stays in your browser and is never transmitted externally. |
 | `tabs` | Allows `background.js` (the service worker) to listen to tab lifecycle events for background monitoring. Only tab ID and URL metadata are used; no tab content is accessed passively. |
 
 ### Host permissions (`http://*/*`, `https://*/*`)

@@ -1,0 +1,15 @@
+{
+  "name": "cyberops-agent",
+  "version": "2.1.0",
+  "description": "Real-time phishing defense and web forensics Chrome extension",
+  "private": true,
+  "scripts": {
+    "lint": "eslint *.js"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

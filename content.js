@@ -1,7 +1,10 @@
-﻿/**
- * content.js â€” injected into every page via manifest.json
+/**
+ * content.js -- injected into every page via manifest.json
  * Listens for RUN_SCAN from popup.js, performs DOM forensics, sends SCAN_RESULT back.
  */
+
+/** Maximum possible Threat Index score. */
+const MAX_SCORE = 100;
 
 (function injectStyles() {
   if (document.getElementById('cyberops-styles')) return;
@@ -42,13 +45,16 @@
 function performDeepScan() {
   const analysis = { score: 0, threats: [], positives: [] };
 
-  document.querySelectorAll('input[type="password"]').forEach(() => {
-    if (window.location.protocol !== 'https:') {
-      analysis.threats.push('Insecure password field (HTTP, not HTTPS)');
-      analysis.score += 40;
-    }
-  });
+  // R1: Password field on a non-HTTPS page (+40, fired at most once per page).
+  if (
+    document.querySelectorAll('input[type="password"]').length > 0 &&
+    window.location.protocol !== 'https:'
+  ) {
+    analysis.threats.push('Insecure password field (HTTP, not HTTPS)');
+    analysis.score += 40;
+  }
 
+  // R2: Form that submits to a cross-origin host (+50 per form).
   document.querySelectorAll('form').forEach((form) => {
     const action = form.action || '';
     if (action.includes('://') && !action.includes(window.location.hostname)) {
@@ -57,10 +63,11 @@ function performDeepScan() {
         analysis.threats.push('Cross-origin form: sends data to ' + dest);
         analysis.score += 50;
         form.classList.add('highlight-danger');
-      } catch {}
+      } catch (_) { /* invalid URL -- skip */ }
     }
   });
 
+  // R3: Social-engineering phrases in visible page text (+20 per phrase).
   const text = document.body.innerText.toLowerCase();
   const urgencyPhrases = [
     'verify your identity', 'account locked', 'unauthorized login',
@@ -75,6 +82,7 @@ function performDeepScan() {
     }
   });
 
+  // R4: Misleading link -- visible text looks like a domain but differs from href host (+30 per link).
   document.querySelectorAll('a[href]').forEach((link) => {
     try {
       const href = new URL(link.href);
@@ -87,8 +95,11 @@ function performDeepScan() {
         analysis.score += 30;
         link.classList.add('highlight-danger');
       }
-    } catch {}
+    } catch (_) { /* invalid href -- skip */ }
   });
+
+  // Cap at MAX_SCORE so the Threat Index always stays in the 0-100 range.
+  analysis.score = Math.min(analysis.score, MAX_SCORE);
 
   if (analysis.score === 0) {
     if (window.location.protocol === 'https:') analysis.positives.push('Secure HTTPS connection');
@@ -111,7 +122,7 @@ function triggerQuarantine(data) {
   titleEl.className = 'cyberops-title';
   const shieldIcon = document.createElement('span');
   shieldIcon.style.fontSize = '30px';
-  shieldIcon.textContent = '🛡';
+  shieldIcon.textContent = '\uD83D\uDEE1'; // shield emoji
   titleEl.appendChild(shieldIcon);
   titleEl.appendChild(document.createTextNode(' THREAT QUARANTINED'));
 
@@ -134,7 +145,7 @@ function triggerQuarantine(data) {
 
   const btn = document.createElement('button');
   btn.className = 'cyber-btn';
-  btn.textContent = 'I Understand The Risks – Dismiss';
+  btn.textContent = 'I Understand The Risks - Dismiss';
   btn.addEventListener('click', () => overlay.remove());
 
   modal.appendChild(titleEl);
@@ -168,7 +179,12 @@ function showWarningBanner(data) {
 chrome.runtime.onMessage.addListener((request) => {
   if (request.type !== 'RUN_SCAN') return;
   const analysis = performDeepScan();
-  chrome.runtime.sendMessage({ type: 'SCAN_RESULT', score: analysis.score });
+  chrome.runtime.sendMessage({
+    type: 'SCAN_RESULT',
+    score: analysis.score,
+    threats: analysis.threats,
+    positives: analysis.positives,
+  });
   if (analysis.score >= 70) triggerQuarantine(analysis);
   else if (analysis.score > 0) showWarningBanner(analysis);
 });

@@ -10,7 +10,7 @@ All rules are evaluated by `performDeepScan()` in [`content.js`](./content.js). 
 
 | # | Rule | Points added | Code location |
 |---|------|:---:|---|
-| R1 | Password field present on a non-HTTPS page | **+40** | `content.js` — password field check |
+| R1 | Password field present on a non-HTTPS page (fired **at most once** per page) | **+40** | `content.js` — password field check |
 | R2 | Form submits to a cross-origin host | **+50** | `content.js` — cross-origin form check |
 | R3 | Social-engineering phrase found in page text | **+20** (per phrase) | `content.js` — urgency phrase list |
 | R4 | Misleading link (visible text shows a domain that differs from `href` host) | **+30** (per link) | `content.js` — misleading link check |
@@ -112,7 +112,7 @@ The page is HTTPS, no password fields, no cross-origin forms, but contains the p
 
 ## Score Cap
 
-There is no hard cap — scores above 100 are possible if many rules fire simultaneously. The threshold logic (`≥ 70` = critical, `> 0` = warning) still applies regardless of how far above 100 the score climbs.
+Scores are capped at **100** before being returned. This keeps the Threat Index within the documented 0–100 range even if multiple high-point rules fire simultaneously.
 
 ---
 

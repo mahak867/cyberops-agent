@@ -1,9 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "CyberOps Agent - AI Defense",
-  "version": "2.0",
-  "description": "Advanced Agentic AI for Real-time Phishing Defense & Forensics.",
+  "name": "CyberOps Agent",
+  "version": "2.1",
+  "description": "Real-time phishing defense and web forensics for Chrome. Scans pages for suspicious forms, misleading links, and social-engineering patterns.",
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_title": "CyberOps Agent"

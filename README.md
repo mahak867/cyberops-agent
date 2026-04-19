@@ -2,11 +2,12 @@
 
 # 🛡️ CyberOps Agent
 
-### AI-Powered Phishing Defense & Web Forensics
+### Real-Time Phishing Defense & Web Forensics
 
+[![CI](https://github.com/mahak867/cyberops-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/mahak867/cyberops-agent/actions/workflows/ci.yml)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?style=flat-square&logo=googlechrome)](https://developer.chrome.com/docs/extensions/mv3/)
-[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?style=flat-square&logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![Version](https://img.shields.io/badge/Version-2.0-green?style=flat-square)](#)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES2021-yellow?style=flat-square&logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Version](https://img.shields.io/badge/Version-2.1-green?style=flat-square)](#)
 [![License](https://img.shields.io/badge/License-MIT-purple?style=flat-square)](#license)
 
 > Real-time threat detection, phishing analysis, and page forensics — right in your browser.
@@ -17,15 +18,15 @@
 
 ## ✨ What It Does
 
-CyberOps Agent is a **Chrome browser extension** that acts as your personal AI security layer. It continuously monitors the pages you visit and gives you an instant **Threat Index score** so you always know how dangerous a site is before you interact with it.
+CyberOps Agent is a **Chrome browser extension** that acts as a personal security layer. It analyses the pages you visit using four deterministic rules and produces an instant **Threat Index score** (0–100) so you know the risk level before you interact with a site.
 
 | Capability | Description |
 |---|---|
 | 🔍 **Deep Page Scan** | On-demand forensic analysis of the current page |
-| 📊 **Threat Index** | Real-time risk score (0–100+) for every site you visit — see [SCORING.md](./SCORING.md) for the full rule set and worked examples |
-| 🚨 **Phishing Detection** | Identifies suspicious patterns, domains, and form behaviour |
-| ⚡ **Background Monitoring** | Service worker silently watches all tabs in real time |
-| 🖥️ **Clean UI** | Dark-themed popup with live console output |
+| 📊 **Threat Index** | Deterministic risk score (0–100) — see [SCORING.md](./SCORING.md) for the full rule set and worked examples |
+| 🚨 **Phishing Detection** | Identifies suspicious forms, misleading links, and social-engineering language |
+| 💾 **Scan History** | Service worker persists the last 20 scan results to local browser storage |
+| 🖥️ **Clean UI** | Dark-themed popup with live threat list after each scan |
 
 ---
 
@@ -52,11 +53,13 @@ CyberOps Agent is a **Chrome browser extension** that acts as your personal AI s
 
 ```
 cyberops-agent/
-├── manifest.json      # Extension config (Manifest V3)
-├── background.js      # Service worker — persistent monitoring
-├── content.js         # Injected into every page for DOM analysis
-├── popup.html         # Extension popup UI
-└── popup.js           # Popup logic & scan orchestration
+├── .github/workflows/ci.yml  # CI — lint on every push/PR
+├── manifest.json              # Extension config (Manifest V3)
+├── background.js              # Service worker — scan-history persistence
+├── content.js                 # Injected into every page for DOM analysis
+├── popup.html                 # Extension popup UI
+├── popup.js                   # Popup logic & scan orchestration
+└── package.json               # Dev tooling (ESLint)
 ```
 
 ### How It Works
@@ -74,9 +77,9 @@ cyberops-agent/
                  Threat Index
 ```
 
-1. **`content.js`** is injected into every page — it reads the DOM, links, forms, and scripts
-2. **`background.js`** runs as a persistent service worker, aggregating signals across tabs
-3. **`popup.js`** triggers deep scans on demand and renders the threat score in the UI
+1. **`content.js`** is injected into every page — it reads the DOM, links, forms, and visible text
+2. **`background.js`** runs as a persistent service worker, persisting scan history via `chrome.storage.local`
+3. **`popup.js`** triggers deep scans on demand and renders the threat score and findings in the UI
 
 ---
 
@@ -112,16 +115,23 @@ CyberOps Agent requests only what it needs. For the full per-permission justific
 
 | Permission | Why It's Needed |
 |---|---|
-| `activeTab` | Read the content of the currently active tab for scanning |
-| `scripting` | Inject `content.js` to analyse page DOM |
-| `storage` | Persist scan history and settings locally (planned feature) |
-| `tabs` | Monitor tab events for background threat tracking |
+| `activeTab` | Identify the currently active tab so the scan targets the page you are viewing |
+| `scripting` | Send the `RUN_SCAN` message to `content.js` running in the active tab |
+| `storage` | Persist the rolling scan history (last 20 results) locally in the browser |
+| `tabs` | Monitor tab events in `background.js` for scan-history attribution |
 
 > **No data is sent to external servers.** All analysis runs locally in your browser.
 
 ---
 
 ## 🛠️ Development
+
+### Setup
+
+```bash
+npm install   # installs ESLint dev dependency
+npm run lint  # lint all JS files
+```
 
 ### Reloading After Changes
 
@@ -131,13 +141,7 @@ Since this is an unpacked extension, after editing any file:
 2. Click the **↺ reload** icon on the CyberOps Agent card
 3. Refresh the tab you want to scan
 
-### File Reference
-
-```js
-// background.js  — add persistent monitoring logic here
-// content.js     — add DOM analysis & page signal extraction here
-// popup.js       — add UI interactions & scan triggers here
-```
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full development guide and PR process.
 
 ---
 
@@ -162,7 +166,8 @@ See **[SCORING.md](./SCORING.md)** for the complete rule reference, the full lis
 
 - [ ] ML-based URL reputation scoring
 - [ ] Integration with threat intelligence APIs (VirusTotal, etc.)
-- [ ] Scan history dashboard
+- [x] Scan history persistence (stored locally via `chrome.storage.local`)
+- [ ] Scan history dashboard UI
 - [ ] Firefox / Edge support
 - [ ] Export forensic reports as PDF
 

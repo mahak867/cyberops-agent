@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberOps Agent</title>
   <style>
     body { width: 340px; background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
     .header { background: linear-gradient(90deg, #224c87, #1e293b); padding: 20px; display: flex; align-items: center; gap: 15px; }
     .header h1 { font-size: 16px; margin: 0; font-weight: 700; }
-    .status-dot { width: 10px; height: 10px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; animation: pulse 2s infinite; }
+    .status-dot { width: 10px; height: 10px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; animation: pulse 2s infinite; flex-shrink: 0; }
     .content { padding: 20px; }
     .score-card { background: #1e293b; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 15px; border: 1px solid #334155; }
     .score-val { font-size: 48px; font-weight: 800; color: #22c55e; line-height: 1; }
     .score-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
-    .btn { width: 100%; background: #da3832; border: none; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .btn { width: 100%; background: #da3832; border: none; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: background 0.2s; }
     .btn:hover { background: #b32d27; }
     .log { margin-top: 15px; font-size: 11px; color: #64748b; font-family: monospace; }
+    .threat-list { list-style: none; padding: 0; margin: 10px 0 0; font-size: 11px; max-height: 120px; overflow-y: auto; }
+    .threat-list li { padding: 4px 6px; border-left: 2px solid currentColor; margin-bottom: 4px; background: rgba(255,255,255,0.04); border-radius: 0 4px 4px 0; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
   </style>
 </head>
@@ -31,11 +36,13 @@
       <div class="score-label">Threat Index</div>
     </div>
 
-    <button class="btn" id="scanBtn">🛡️ DEEP SCAN PAGE</button>
+    <button class="btn" id="scanBtn">&#x1F6E1;&#xFE0F; DEEP SCAN PAGE</button>
 
     <div class="log" id="consoleLog">
-      > Awaiting scan command...
+      &gt; Awaiting scan command...
     </div>
+
+    <ul class="threat-list" id="threatList"></ul>
   </div>
 
   <script src="popup.js"></script>
